@@ -29,10 +29,27 @@ def summarize():
             return jsonify({"error": "Transcript is required."}), 400
 
         prompt = (
-            "Summarize the following meeting transcript in a few sentences. "
-            "Then list clear action items, including responsible persons and deadlines if mentioned.\n\n"
-            f"{transcript}"
-        )
+                    "You are an expert AI meeting assistant. Given the following transcript of a business meeting, "
+                    "your task is to:\n\n"
+                    "1. Write a concise summary (3–5 sentences) of key discussion points, avoiding filler talk.\n"
+                    "2. Identify and clearly list any **action items** discussed.\n"
+                    "   - For each action item, include:\n"
+                    "     • Task description\n"
+                    "     • Responsible person (if mentioned)\n"
+                    "     • Deadline (if mentioned)\n"
+                    "3. If possible, format the response in markdown.\n\n"
+                    "Meeting Transcript:\n"
+                    f"{transcript}\n\n"
+                    "---\n\n"
+                    "Respond in the following format:\n\n"
+                    "### Summary:\n"
+                    "<summary here>\n\n"
+                    "### Action Items:\n"
+                    "- **Task**: ...  \n"
+                    "  **Owner**: ...  \n"
+                    "  **Deadline**: ...\n"
+                )
+
 
         response = model.generate_content(prompt)
 
