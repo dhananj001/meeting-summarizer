@@ -16,163 +16,150 @@
       font-style: italic;
       color: #374151;
     }
-    /* Starry background canvas */
-    #starfield {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      background: linear-gradient(to bottom, #030014, #0a0a2a);
-    }
-    /* Bright, professional scrollbar */
+    /* Bright scrollbar */
     *::-webkit-scrollbar {
       width: 8px;
     }
     *::-webkit-scrollbar-track {
-      background: #e5e7eb;
+      background: #f1f5f9;
       border-radius: 4px;
     }
     *::-webkit-scrollbar-thumb {
-      background: #f3f4f6;
+      background: #d1d5db;
       border-radius: 4px;
     }
     *::-webkit-scrollbar-thumb:hover {
-      background: #d1d5db;
+      background: #9ca3af;
     }
-    /* Firefox scrollbar */
     * {
       scrollbar-width: thin;
-      scrollbar-color: #f3f4f6 #e5e7eb;
+      scrollbar-color: #d1d5db #f1f5f9;
+    }
+    /* Subtle background pattern */
+    body {
+      background: linear-gradient(to bottom right, #ffffff, #f8fafc);
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e2e8f0' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30v4h4v2h-4v4h-2v-4h-4v-2h4v-4h2zm-12 28v4h2v-4h4v-2h-4v-4h-2v4h-4v2h4zm-12-12v2h4v4h2v-4h4v-2h-4v-4h-2v4h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
   </style>
 </head>
-<body class="h-full flex items-center justify-center p-4 sm:p-6 overflow-hidden">
-  <!-- Starry Background Canvas -->
-  <canvas id="starfield"></canvas>
+<body class="h-full flex flex-col p-4 sm:p-6">
+  <!-- Header -->
+  <header class="w-full max-w-7xl mx-auto mb-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">AI Meeting Summarizer</h1>
+        <p class="text-sm text-gray-500 mt-1">Effortlessly distill meeting transcripts into concise insights.</p>
+      </div>
+      <div class="text-sm text-gray-500">Powered by xAI</div>
+    </div>
+  </header>
 
   <!-- Main Container -->
-  <div class="w-full max-w-7xl h-[90vh] flex bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-xl border border-gray-800/50 overflow-hidden">
+  <main class="w-full max-w-7xl mx-auto h-[calc(100vh-8rem)] flex bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
     <!-- Left Section: Transcript Input -->
     <div id="input-section" class="flex-1 p-6 sm:p-8 flex flex-col space-y-6 overflow-y-auto">
-      <div class="space-y-2 text-left">
-        <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight text-center">AI Meeting Summarizer</h1>
-        <p class="text-base text-gray-200 max-w-2xl mx-auto text-center">Transform meeting transcripts into concise summaries and actionable insights with advanced AI.</p>
-      </div>
       <div class="space-y-3">
-        <label for="transcript" class="block text-sm font-medium text-gray-300">Meeting Transcript</label>
+        <label for="transcript" class="block text-sm font-medium text-gray-700">Meeting Transcript</label>
         <textarea
           id="transcript"
-          rows="10"
-          class="w-full bg-gray-800/70 text-gray-200 border border-gray-700 rounded-lg p-4 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder-gray-500 text-base"
-          placeholder="Paste your meeting transcript here..."
+          rows="12"
+          class="w-full bg-gray-50 text-gray-900 border border-gray-300 rounded-lg p-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder-gray-400 text-base"
+          placeholder="Paste or type your meeting transcript here..."
         ></textarea>
       </div>
       <div class="flex items-center gap-4">
         <button
           id="summarizeBtn"
-          class="bg-blue-500 text-white px-5 py-2 rounded-lg font-medium shadow-sm hover:bg-blue-600 transition-all duration-150"
+          class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-150 text-base"
         >
           Summarize
         </button>
-        <div id="loading" class="text-sm text-gray-200 hidden flex items-center gap-2">
-          <svg class="animate-spin h-4 w-4 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <button
+          id="clearBtn"
+          class="bg-gray-200 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-300 transition-all duration-150 text-base"
+        >
+          Clear
+        </button>
+        <div id="loading" class="text-sm text-gray-500 hidden flex items-center gap-2">
+          <svg class="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
           </svg>
           Processing...
         </div>
       </div>
+      <!-- Status Bar -->
+      <div class="text-sm text-gray-500 flex justify-between items-center">
+        <span>Character count: <span id="charCount">0</span></span>
+        <span>Last summarized: <span id="lastSummarized">Never</span></span>
+      </div>
     </div>
 
     <!-- Right Section: Summary Panel (Hidden by Default) -->
     <div
       id="result"
-      class="w-0 lg:w-96 bg-gray-900/90 backdrop-blur-sm border-l border-gray-800/50 p-0 lg:p-6 flex flex-col space-y-6 overflow-y-auto transition-all duration-300 hidden"
+      class="w-0 lg:w-96 bg-white border-l border-gray-200 p-0 lg:p-6 flex flex-col space-y-6 overflow-y-auto transition-all duration-300 hidden"
     >
       <div class="space-y-3">
-        <h2 class="text-lg font-medium text-white">Summary</h2>
-        <div id="summaryText" class="bg-gray-800/50 p-4 rounded-lg text-gray-200 text-base"></div>
+        <h2 class="text-lg font-medium text-gray-900">Summary</h2>
+        <div id="summaryText" class="bg-gray-50 p-4 rounded-lg text-gray-700 text-base"></div>
       </div>
       <div class="space-y-3">
-        <h2 class="text-lg font-medium text-white">Action Items</h2>
-        <ul id="actionItems" class="list-disc pl-5 space-y-2 text-gray-200 text-base"></ul>
+        <h2 class="text-lg font-medium text-gray-900">Action Items</h2>
+        <ul id="actionItems" class="space-y-3"></ul>
       </div>
+      <button
+        id="exportBtn"
+        class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm hover:bg-blue-700 transition-all duration-150 text-base"
+      >
+        Export Summary
+      </button>
     </div>
-  </div>
+  </main>
 
-  <!-- Starfield Animation Script -->
-  <script>
-    const canvas = document.getElementById('starfield');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const stars = [];
-    const numStars = 100;
-
-    class Star {
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 1.2;
-        this.speed = Math.random() * 0.03;
-        this.opacity = Math.random() * 0.4 + 0.2;
-      }
-      update() {
-        this.y += this.speed;
-        if (this.y > canvas.height) {
-          this.y = 0;
-          this.x = Math.random() * canvas.width;
-        }
-      }
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-        ctx.fill();
-      }
-    }
-
-    for (let i = 0; i < numStars; i++) {
-      stars.push(new Star());
-    }
-
-    function animateStars() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      stars.forEach(star => {
-        star.update();
-        star.draw();
-      });
-      requestAnimationFrame(animateStars);
-    }
-    animateStars();
-
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
-  </script>
-
-  <!-- Original JavaScript Logic -->
+  <!-- JavaScript -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const summarizeBtn = document.getElementById("summarizeBtn");
+      const clearBtn = document.getElementById("clearBtn");
+      const exportBtn = document.getElementById("exportBtn");
       const loading = document.getElementById("loading");
       const resultDiv = document.getElementById("result");
       const summaryText = document.getElementById("summaryText");
       const actionItemsList = document.getElementById("actionItems");
+      const transcript = document.getElementById("transcript");
+      const charCount = document.getElementById("charCount");
+      const lastSummarized = document.getElementById("lastSummarized");
 
-      if (!summarizeBtn || !loading || !resultDiv || !summaryText || !actionItemsList) {
+      if (!summarizeBtn || !clearBtn || !exportBtn || !loading || !resultDiv || !summaryText || !actionItemsList || !transcript || !charCount || !lastSummarized) {
         console.error("One or more DOM elements not found.");
         alert("⚠️ Application error: Required elements not found.");
         return;
       }
 
+      // Character count update
+      transcript.addEventListener("input", () => {
+        charCount.textContent = transcript.value.length;
+      });
+
+      // Clear button
+      clearBtn.addEventListener("click", () => {
+        transcript.value = "";
+        charCount.textContent = "0";
+        resultDiv.classList.add("hidden");
+        resultDiv.classList.remove("w-80", "lg:w-96", "p-6");
+        resultDiv.classList.add("w-0", "p-0");
+      });
+
+      // Export button (placeholder)
+      exportBtn.addEventListener("click", () => {
+        alert("Export functionality coming soon!");
+      });
+
+      // Summarize button
       summarizeBtn.addEventListener("click", async () => {
-        const transcript = document.getElementById("transcript").value.trim();
-        if (!transcript) return alert("Please paste a transcript.");
+        const transcriptValue = transcript.value.trim();
+        if (!transcriptValue) return alert("Please paste a transcript.");
 
         loading.classList.remove("hidden");
         resultDiv.classList.add("hidden");
@@ -183,7 +170,7 @@
           const response = await fetch("http://127.0.0.1:5000/summarize", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ transcript }),
+            body: JSON.stringify({ transcript: transcriptValue }),
           });
 
           if (!response.ok) throw new Error("Server error");
@@ -191,13 +178,39 @@
           const data = await response.json();
           summaryText.textContent = data.summary || "No summary returned.";
           actionItemsList.innerHTML = "";
+          // Parse action items to extract Task, POC, and Deadline
           (data.action_items || []).forEach((item) => {
             const li = document.createElement("li");
-            li.innerHTML = marked.parseInline(item);
+            const parsed = marked.parseInline(item);
+            const match = parsed.match(/Task: (.*?)(?:<br>|\s*Point of Contact \(POC\): (.*?)(?:<br>|\s*Deadline: (.*))?)?/i);
+            if (match) {
+              const task = match[1] || "No task specified";
+              const poc = match[2] || "Unassigned";
+              const deadline = match[3] || "No deadline";
+              li.innerHTML = `
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm hover:bg-gray-100 transition-all duration-150 space-y-2">
+                  <div class="flex items-start gap-2">
+                    <span class="text-gray-500 text-sm">📋</span>
+                    <span class="font-medium text-gray-900 text-base">${task}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-gray-500 text-sm">👤</span>
+                    <span class="text-blue-600 text-base">${poc}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-gray-500 text-sm">📅</span>
+                    <span class="${deadline.includes('Friday') || deadline.includes('End of Day') ? 'text-red-600' : 'text-gray-700'} text-base">${deadline}</span>
+                  </div>
+                </div>
+              `;
+            } else {
+              li.innerHTML = `<div class="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm hover:bg-gray-100 transition-all duration-150">${parsed}</div>`;
+            }
             actionItemsList.appendChild(li);
           });
 
           resultDiv.classList.remove("hidden");
+          lastSummarized.textContent = new Date().toLocaleTimeString();
         } catch (err) {
           alert("⚠️ Something went wrong: " + err.message);
           console.error(err);
