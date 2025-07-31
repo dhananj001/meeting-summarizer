@@ -2,156 +2,229 @@
 <html lang="en" class="h-full bg-gray-50">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AI Meeting Summarizer</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <style>
-    /* Scrollbar */
-    *::-webkit-scrollbar {
-      width: 8px;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Meeting Summarizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Scrollbar */
+        *::-webkit-scrollbar {
+            width: 8px;
+        }
 
-    *::-webkit-scrollbar-track {
-      background: #f3f4f6;
-      border-radius: 8px;
-    }
+        *::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
 
-    *::-webkit-scrollbar-thumb {
-      background: #9ca3af;
-      border-radius: 8px;
-    }
+        *::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 8px;
+        }
 
-    *::-webkit-scrollbar-thumb:hover {
-      background: #6b7280;
-    }
+        *::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
 
-    /* Prose styling for summary */
-    .prose ul {
-      list-style-type: disc;
-      margin-left: 1.25rem;
-      margin-bottom: 1rem;
-    }
+        /* Prose styling for summary */
+        .prose ul {
+            list-style-type: disc;
+            margin-left: 1.25rem;
+            margin-bottom: 1rem;
+        }
 
-    /* Smooth transitions */
-    textarea,
-    button {
-      transition: all 0.2s ease-in-out;
-    }
-  </style>
+        /* Smooth transitions */
+        textarea,
+        button {
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Floating preset buttons */
+        .preset-card {
+            background-color: #ffffff;
+            border: 1px solid #d1d5db;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            white-space: nowrap;
+        }
+
+        .preset-card:hover {
+            background-color: #f3f4f6;
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 
 <body class="h-full flex flex-col max-w-4xl mx-auto p-6 sm:p-10 font-sans text-gray-900 select-text">
 
-  <header class="mb-8 text-center">
-    <h1 class="text-4xl font-extrabold mb-2">AI Meeting Summarizer</h1>
-    <p class="text-gray-600 text-lg max-w-xl mx-auto">Turn meeting transcripts into concise summaries and actionable tasks.</p>
-  </header>
+    <!-- Floating Presets for Desktop -->
+    <div id="leftPresets" class="hidden lg:flex fixed top-1/2 -translate-y-1/2 left-10 flex-col space-y-4 z-40 w-48">
+        <button class="preset-card"
+            data-content="We're kicking off the project today with a clear focus on timelines and responsibilities. The total project duration is three weeks, starting with backend infrastructure setup by the development team. Designers will complete wireframes and mockups by Friday. Daily standups will be held at 10 AM to track progress and quickly identify blockers. Communication will be streamlined via Slack, Notion, and GitHub for task tracking. Everyone is expected to update their progress regularly. Our goal is to meet again next Monday for a comprehensive review of deliverables and next steps.">
+            Example 1
+        </button>
+        <button class="preset-card"
+            data-content="Our upcoming marketing campaign will concentrate on LinkedIn ads and Google PPC starting next Tuesday. The landing page needs clear, compelling CTAs, integrated with authentic client testimonials to boost conversions. The approved budget stands at ₹50,000, and the analytics tracking setup must be completed by the weekend. We will closely monitor performance metrics and adjust targeting as needed. The team will reconvene in two weeks to evaluate the campaign’s effectiveness and strategize further steps.">
+            Example 2
+        </button>
+        <button class="preset-card"
+            data-content="The updated homepage layout has significantly improved clarity and user engagement. However, the CTA button currently lacks sufficient contrast and requires adjustment to stand out better. On mobile, the padding feels a bit tight, making touch targets smaller than ideal — increasing spacing would improve usability. The animations throughout the site are smooth and effective, especially the scroll-triggered effects, which should be applied on the pricing page as well. Lastly, the testimonial carousel experiences lag on slower devices; consider a more lightweight solution. Final design tweaks are due by Thursday for development handoff.">
+            Example 3
+        </button>
+    </div>
 
-  <main class="flex flex-col sm:flex-row gap-10">
+    <div id="rightPresets" class="hidden lg:flex fixed top-1/2 -translate-y-1/2 right-10 flex-col space-y-4 z-40 w-48">
+        <button class="preset-card"
+            data-content="During today’s standup, Anita reported progress fixing the navbar rendering issue affecting Safari browsers, expected to complete by noon. Ravi finished migrating the database yesterday and will now focus on seeding test data and writing test cases. Meena is redesigning the contact form per updated wireframes and needs clarification on Google Maps integration approach. The backend team is awaiting updated API documentation for the payment gateway. The design team is still pending updated icons from the branding guide. The next developer sync is scheduled for tomorrow.">
+            Example 4
+        </button>
+        <button class="preset-card"
+            data-content="We reviewed current bugs: Issue #123 causing login timeouts is confirmed on mobile and has been assigned to backend developers. The dark mode toggle flickers intermittently on Safari, which frontend will address. Typography inconsistencies on the pricing page require design team intervention in Figma. A critical bug involving silent form validation failures on the signup flow must be hotfixed today. This triage session has clarified priorities and assignments.">
+            Example 5
+        </button>
+        <button class="preset-card"
+            data-content="Wrapping up Sprint 5, the team successfully completed the onboarding flow with zero regression bugs reported in staging. Deployment was delayed due to unmerged pull requests, highlighting the need for stricter deadline enforcement. Daily check-ins improved team coordination and will continue. Key action items include setting up branch protection rules and assigning a rotating code review lead. The next sprint, focusing on dashboard metrics, begins Monday. Great job team, let’s keep momentum going!">
+            Example 6
+        </button>
+    </div>
 
-    <!-- Input Section -->
-    <section class="flex-1 flex flex-col">
-      <label for="transcript" class="mb-3 font-semibold text-gray-700 text-lg">Meeting Transcript</label>
-      <textarea id="transcript" rows="14" placeholder="Paste your meeting transcript here..."
-        class="resize-none rounded-xl border border-gray-300 p-5 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"></textarea>
 
-      <div class="flex justify-between items-center mt-4 text-gray-500 text-sm select-none font-medium">
-        <span>Characters: <span id="charCount">0</span></span>
-        <span>Max 1000 words</span>
-      </div>
+    <!-- Mobile Presets (Visible Only on Small Screens) -->
+    <div id="mobilePresets" class="lg:hidden mt-6 overflow-x-auto flex space-x-4 pb-2">
+        <button class="preset-card flex-shrink-0" data-content="Meeting points example 1...">Example 1</button>
+        <button class="preset-card flex-shrink-0" data-content="Client feedback summary...">Example 2</button>
+        <button class="preset-card flex-shrink-0" data-content="Weekly sync highlights...">Example 3</button>
+        <button class="preset-card flex-shrink-0" data-content="Project kickoff recap...">Example 4</button>
+        <button class="preset-card flex-shrink-0" data-content="Sales team discussion...">Example 5</button>
+        <button class="preset-card flex-shrink-0" data-content="Design sprint notes...">Example 6</button>
+    </div>
 
-      <button id="summarizeBtn"
-        class="mt-8 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-semibold shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 text-lg">
-        Summarize
-      </button>
-    </section>
 
-    <!-- Output Section -->
-    <section id="result"
-      class="hidden flex-1 flex flex-col bg-white rounded-xl border border-gray-300 p-6 shadow-lg overflow-y-auto max-h-[600px]">
-      <div id="summaryText" class="prose max-w-none text-gray-800 mb-8"></div>
 
-      <ul id="actionItems" class="list-disc list-inside text-gray-700 space-y-3"></ul>
-    </section>
+    <header class="mb-8 text-center">
+        <h1 class="text-4xl font-extrabold mb-2">AI Meeting Summarizer</h1>
+        <p class="text-gray-600 text-lg max-w-xl mx-auto">Turn meeting transcripts into concise summaries and actionable
+            tasks.</p>
+    </header>
 
-  </main>
+    <main class="flex flex-col sm:flex-row gap-10">
+        <!-- Input Section -->
+        <section class="flex-1 flex flex-col">
+            <label for="transcript" class="mb-3 font-semibold text-gray-700 text-lg">Meeting Transcript</label>
+            <textarea id="transcript" rows="14" placeholder="Paste your meeting transcript here..."
+                class="resize-none rounded-xl border border-gray-300 p-5 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"></textarea>
 
-  <div id="loading"
-    class="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center text-blue-600 text-lg font-semibold hidden z-50">
-    <svg class="animate-spin mr-3 h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-      viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-    </svg>
-    Processing...
-  </div>
+            <div class="flex justify-between items-center mt-4 text-gray-500 text-sm select-none font-medium">
+                <span>Characters: <span id="charCount">0</span></span>
+                <span>Max 1000 words</span>
+            </div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const transcript = document.getElementById("transcript");
-      const charCount = document.getElementById("charCount");
-      const summarizeBtn = document.getElementById("summarizeBtn");
-      const loading = document.getElementById("loading");
-      const resultSection = document.getElementById("result");
-      const summaryText = document.getElementById("summaryText");
-      const actionItemsList = document.getElementById("actionItems");
+            <button id="summarizeBtn"
+                class="mt-8 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-semibold shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 text-lg">
+                Summarize
+            </button>
+        </section>
 
-      // Live character count
-      transcript.addEventListener("input", () => {
-        charCount.textContent = transcript.value.length;
-      });
+        <!-- Output Section -->
+        <section id="result"
+            class="hidden flex-1 flex flex-col bg-white rounded-xl border border-gray-300 p-6 shadow-lg overflow-y-auto max-h-[600px]">
+            <div id="summaryText" class="prose max-w-none text-gray-800 mb-8"></div>
+            <ul id="actionItems" class="list-disc list-inside text-gray-700 space-y-3"></ul>
+        </section>
+    </main>
 
-      summarizeBtn.addEventListener("click", async () => {
-        const fullTranscript = transcript.value.trim();
-        if (!fullTranscript) {
-          alert("Please paste a transcript.");
-          return;
-        }
+    <!-- Loading Spinner -->
+    <div id="loading"
+        class="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center text-blue-600 text-lg font-semibold hidden z-50">
+        <svg class="animate-spin mr-3 h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+        </svg>
+        Processing...
+    </div>
 
-        // Limit to 1000 words max
-        const words = fullTranscript.split(/\s+/);
-        const limitedTranscript = words.slice(0, 1000).join(" ");
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const transcript = document.getElementById("transcript");
+            const charCount = document.getElementById("charCount");
+            const summarizeBtn = document.getElementById("summarizeBtn");
+            const loading = document.getElementById("loading");
+            const resultSection = document.getElementById("result");
+            const summaryText = document.getElementById("summaryText");
+            const actionItemsList = document.getElementById("actionItems");
+            const presetCards = document.querySelectorAll(".preset-card");
+            const leftPresets = document.getElementById("leftPresets");
+            const rightPresets = document.getElementById("rightPresets");
 
-        loading.classList.remove("hidden");
-        resultSection.classList.add("hidden");
-        summaryText.innerHTML = "";
-        actionItemsList.innerHTML = "";
+            // Live character count
+            transcript.addEventListener("input", () => {
+                charCount.textContent = transcript.value.length;
+            });
 
-        try {
-          const response = await fetch("http://127.0.0.1:5000/summarize", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ transcript: limitedTranscript }),
-          });
+            // Apply preset content to textarea
+            presetCards.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    transcript.value = btn.dataset.content;
+                    charCount.textContent = transcript.value.length;
+                });
+            });
+            const mobilePresets = document.getElementById("mobilePresets");
 
-          if (!response.ok) throw new Error("Server error");
+            summarizeBtn.addEventListener("click", async () => {
+                const fullTranscript = transcript.value.trim();
+                if (!fullTranscript) {
+                    alert("Please paste a transcript.");
+                    return;
+                }
 
-          const data = await response.json();
+                // Hide preset buttons
+                leftPresets.classList.add("hidden");
+                rightPresets.classList.add("hidden");
 
-          // Show summary markdown with bullet points
-          summaryText.innerHTML = marked.parse(data.summary || "No summary available.");
+                if (mobilePresets) mobilePresets.classList.add("hidden");
 
-          // Show action items as bullet points
-          actionItemsList.innerHTML = "";
-          (data.action_items || []).forEach(({ task, poc, deadline }) => {
-            const li = document.createElement("li");
-            li.textContent = `${task} (POC: ${poc}, Deadline: ${deadline})`;
-            actionItemsList.appendChild(li);
-          });
+                const words = fullTranscript.split(/\s+/);
+                const limitedTranscript = words.slice(0, 1000).join(" ");
 
-          resultSection.classList.remove("hidden");
-        } catch (err) {
-          alert("⚠️ Something went wrong: " + err.message);
-          console.error(err);
-        } finally {
-          loading.classList.add("hidden");
-        }
-      });
-    });
-  </script>
+                loading.classList.remove("hidden");
+                resultSection.classList.add("hidden");
+                summaryText.innerHTML = "";
+                actionItemsList.innerHTML = "";
 
+                try {
+                    const response = await fetch("http://127.0.0.1:5000/summarize", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ transcript: limitedTranscript }),
+                    });
+
+                    if (!response.ok) throw new Error("Server error");
+
+                    const data = await response.json();
+                    summaryText.innerHTML = marked.parse(data.summary || "No summary available.");
+
+                    (data.action_items || []).forEach(({ task, poc, deadline }) => {
+                        const li = document.createElement("li");
+                        li.textContent = `${task} (POC: ${poc}, Deadline: ${deadline})`;
+                        actionItemsList.appendChild(li);
+                    });
+
+                    resultSection.classList.remove("hidden");
+                } catch (err) {
+                    alert("⚠️ Something went wrong: " + err.message);
+                    console.error(err);
+                } finally {
+                    loading.classList.add("hidden");
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
