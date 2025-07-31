@@ -18,24 +18,6 @@ headers = {
     "Content-Type": "application/json"
 }
 
-def split_into_bullets(text, max_points=5):
-    # Split text into sentences and return up to max_points bullets
-    sentences = re.split(r'(?<=[.!?]) +', text.strip())
-    bullets = [f"- {s.strip()}" for s in sentences if s.strip()]
-    return "\n".join(bullets[:max_points])
-
-def extract_action_items(text):
-    # Extract lines that look like action items in a flexible way
-    action_items = []
-    lines = text.split('\n')
-    for line in lines:
-        line_lower = line.lower()
-        if line.strip().startswith('-') or any(k in line_lower for k in ['task', 'deadline', 'poc', 'action item']):
-            cleaned = line.strip('- ').strip()
-            # Optional: further parse for task/poc/deadline if structured
-            action_items.append(cleaned)
-    return action_items
-
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -60,22 +42,38 @@ def summarize():
             print("HuggingFace API error:", response.text)
             return jsonify({"error": "Failed to get summary from API."}), 500
 
-        summary_text = response.json()[0]['summary_text']
+        hf_json = response.json()
+        summary_text = hf_json[0].get("summary_text", "").strip()
 
-        # Format summary as bullet points for clarity
-        formatted_summary = split_into_bullets(summary_text)
+        # Convert summary to bullet points by splitting sentences
+        sentences = re.split(r'(?<=[.!?])\s+', summary_text)
+        sentences = [s.strip() for s in sentences if s.strip()]
+        summary_points = "\n".join(f"- {s}" for s in sentences)
 
-        # Extract action items from transcript (fallback if none structured)
-        action_items = extract_action_items(transcript)
+        # Extract action items from transcript using regex
+        tasks = []
+        pattern = re.compile(
+            r"-\s*Task:\s*(?P<task>.*?);?\s*POC:\s*(?P<poc>.*?);?\s*Deadline:\s*(?P<deadline>.*)", re.IGNORECASE)
 
+        for line in transcript.split('\n'):
+            match = pattern.match(line.strip())
+            if match:
+                tasks.append({
+                    "task": match.group("task").strip(),
+                    "poc": match.group("poc").strip(),
+                    "deadline": match.group("deadline").strip()
+                })
+
+        # Return the bullet-point summary and extracted tasks
         return jsonify({
-            "summary": formatted_summary,
-            "action_items": action_items
+            "summary": summary_points,
+            "action_items": tasks
         })
 
     except Exception as e:
         print("Error:", e)
         return jsonify({"error": "Server error occurred."}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)
