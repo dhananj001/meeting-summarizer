@@ -2,18 +2,39 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
-import google.generativeai as genai
+import requests
+import re
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# Configure Google Gemini API
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
+HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
 
-# Initialize model
-model = genai.GenerativeModel("models/gemini-1.5-flash")
+headers = {
+    "Authorization": f"Bearer {HUGGINGFACE_API_KEY}",
+    "Content-Type": "application/json"
+}
+
+def split_into_bullets(text, max_points=5):
+    # Split text into sentences and return up to max_points bullets
+    sentences = re.split(r'(?<=[.!?]) +', text.strip())
+    bullets = [f"- {s.strip()}" for s in sentences if s.strip()]
+    return "\n".join(bullets[:max_points])
+
+def extract_action_items(text):
+    # Extract lines that look like action items in a flexible way
+    action_items = []
+    lines = text.split('\n')
+    for line in lines:
+        line_lower = line.lower()
+        if line.strip().startswith('-') or any(k in line_lower for k in ['task', 'deadline', 'poc', 'action item']):
+            cleaned = line.strip('- ').strip()
+            # Optional: further parse for task/poc/deadline if structured
+            action_items.append(cleaned)
+    return action_items
 
 @app.route("/")
 def home():
@@ -28,50 +49,33 @@ def summarize():
         if not transcript:
             return jsonify({"error": "Transcript is required."}), 400
 
-        # ✅ Truncate transcript to 1000 words to reduce token cost
+        # Truncate to 1000 words max to save tokens
         words = transcript.split()
         if len(words) > 1000:
             transcript = " ".join(words[:1000])
 
-        # ✅ More concise prompt (reduced input token usage)
-        prompt = (
-            "You are an AI meeting assistant. Summarize the following business meeting in 3–5 sentences. "
-            "Then extract action items as markdown collapsible cards using <details>. "
-            "Each card should contain:\n"
-            "- Task\n- Point of Contact (POC)\n- Deadline\n\n"
-            f"Meeting Transcript:\n{transcript}"
-        )
+        # Call Hugging Face summarization API
+        response = requests.post(HUGGINGFACE_API_URL, headers=headers, json={"inputs": transcript})
+        if response.status_code != 200:
+            print("HuggingFace API error:", response.text)
+            return jsonify({"error": "Failed to get summary from API."}), 500
 
-        # Optional: Log token estimate before sending
-        tokens = model.count_tokens(prompt).total_tokens
-        print("Estimated token usage (input):", tokens)
+        summary_text = response.json()[0]['summary_text']
 
-        # 🔁 Call Gemini
-        response = model.generate_content(prompt)
-        content = response.text.strip()
+        # Format summary as bullet points for clarity
+        formatted_summary = split_into_bullets(summary_text)
 
-        # ✅ Split into summary and action items
-        parts = content.split("Action Items:")
-        summary = parts[0].replace("Summary:", "").strip()
-        action_items_raw = parts[1] if len(parts) > 1 else ""
-
-        # ✅ Extract each <details> block separately (preserving markdown)
-        action_items = []
-        blocks = action_items_raw.split("<details>")
-        for block in blocks:
-            block = block.strip()
-            if block:
-                item = "<details>" + block if not block.startswith("<details>") else block
-                action_items.append(item)
+        # Extract action items from transcript (fallback if none structured)
+        action_items = extract_action_items(transcript)
 
         return jsonify({
-            "summary": summary,
+            "summary": formatted_summary,
             "action_items": action_items
         })
 
     except Exception as e:
         print("Error:", e)
-        return jsonify({"error": "Something went wrong on the server."}), 500
+        return jsonify({"error": "Server error occurred."}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
