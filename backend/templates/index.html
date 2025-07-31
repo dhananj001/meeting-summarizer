@@ -1,30 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-50">
+<html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meeting Summarizer</title>
+  <title>AI Meeting Summarizer</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-    .gradient-bg {
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    }
-    .glass-effect {
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .hover-scale {
-      transition: transform 0.2s ease-in-out;
-    }
-    .hover-scale:hover {
-      transform: scale(1.02);
-    }
-    /* Style markdown-rendered text */
+    /* Retain markdown styling for action items */
     #actionItems strong {
       font-weight: 700;
       color: #1f2937;
@@ -33,56 +16,127 @@
       font-style: italic;
       color: #374151;
     }
+    /* Starry background canvas */
+    #starfield {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: linear-gradient(to bottom, #030014, #0a0a2a);
+    }
   </style>
 </head>
-<body class="h-full flex items-center justify-center p-6 bg-gradient-to-br from-blue-100 via-purple-100 to-gray-100">
-  <div class="w-full max-w-4xl glass-effect shadow-2xl rounded-2xl p-8 space-y-8 hover-scale">
-    <div class="text-center">
-      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">📝 Meeting Summarizer</h1>
-      <p class="mt-2 text-sm text-gray-600">Transform your meeting transcripts into concise summaries and actionable insights.</p>
-    </div>
+<body class="h-full flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+  <!-- Starry Background Canvas -->
+  <canvas id="starfield"></canvas>
 
-    <!-- Transcript Input -->
-    <div>
-      <label for="transcript" class="block text-sm font-semibold text-gray-700 mb-2">Paste Meeting Transcript</label>
-      <textarea
-        id="transcript"
-        rows="8"
-        class="w-full border border-gray-200 rounded-lg p-4 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-        placeholder="Paste your meeting transcript here..."
-      ></textarea>
-    </div>
-
-    <!-- Controls -->
-    <div class="flex justify-between items-center">
-      <button
-        id="summarizeBtn"
-        class="gradient-bg text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-      >
-        Summarize Now
-      </button>
-      <div id="loading" class="text-sm text-gray-500 hidden flex items-center gap-2">
-        <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-        </svg>
-        Summarizing...
+  <!-- Main Container -->
+  <div class="w-full max-w-7xl h-[90vh] flex bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-800/50 overflow-hidden">
+    <!-- Left Section: Transcript Input -->
+    <div id="input-section" class="flex-1 p-6 sm:p-8 space-y-6 overflow-y-auto">
+      <div class="space-y-2">
+        <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">AI Meeting Summarizer</h1>
+        <p class="text-sm text-gray-400">Generate concise summaries and actionable insights from your meeting transcripts with advanced AI.</p>
+      </div>
+      <div class="space-y-3">
+        <label for="transcript" class="block text-sm font-medium text-gray-300">Meeting Transcript</label>
+        <textarea
+          id="transcript"
+          rows="10"
+          class="w-full bg-gray-800/70 text-gray-200 border border-gray-700 rounded-lg p-4 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder-gray-500"
+          placeholder="Paste your meeting transcript here..."
+        ></textarea>
+      </div>
+      <div class="flex items-center gap-4">
+        <button
+          id="summarizeBtn"
+          class="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all duration-150"
+        >
+          Summarize
+        </button>
+        <div id="loading" class="text-sm text-gray-400 hidden flex items-center gap-2">
+          <svg class="animate-spin h-4 w-4 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+          </svg>
+          Processing...
+        </div>
       </div>
     </div>
 
-    <!-- Result Display -->
-    <div id="result" class="hidden space-y-6">
-      <div>
-        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">📌 Summary</h2>
-        <p id="summaryText" class="bg-white p-4 rounded-lg border border-gray-100 shadow-sm text-gray-700"></p>
+    <!-- Right Section: Summary Panel (Hidden by Default) -->
+    <div
+      id="result"
+      class="w-0 lg:w-96 bg-gray-900/90 backdrop-blur-sm border-l border-gray-800/50 p-0 lg:p-6 space-y-6 overflow-y-auto transition-all duration-300 hidden"
+    >
+      <div class="space-y-3">
+        <h2 class="text-lg font-medium text-white flex items-center gap-2">Summary</h2>
+        <div id="summaryText" class="bg-gray-800/50 p-4 rounded-lg text-gray-300 text-sm"></div>
       </div>
-      <div>
-        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">✅ Action Items</h2>
-        <ul id="actionItems" class="list-disc pl-6 space-y-2 text-gray-700"></ul>
+      <div class="space-y-3">
+        <h2 class="text-lg font-medium text-white flex items-center gap-2">Action Items</h2>
+        <ul id="actionItems" class="list-disc pl-5 space-y-2 text-gray-300 text-sm"></ul>
       </div>
     </div>
   </div>
 
+  <!-- Starfield Animation Script -->
+  <script>
+    // Starfield animation inspired by Grok's background
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const stars = [];
+    const numStars = 100;
+
+    class Star {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 1.5;
+        this.speed = Math.random() * 0.05;
+        this.opacity = Math.random() * 0.5 + 0.3;
+      }
+      update() {
+        this.y += this.speed;
+        if (this.y > canvas.height) {
+          this.y = 0;
+          this.x = Math.random() * canvas.width;
+        }
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < numStars; i++) {
+      stars.push(new Star());
+    }
+
+    function animateStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      stars.forEach(star => {
+        star.update();
+        star.draw();
+      });
+      requestAnimationFrame(animateStars);
+    }
+    animateStars();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+
+  <!-- Original JavaScript Logic -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const summarizeBtn = document.getElementById("summarizeBtn");
@@ -103,6 +157,8 @@
 
         loading.classList.remove("hidden");
         resultDiv.classList.add("hidden");
+        resultDiv.classList.remove("w-0", "p-0");
+        resultDiv.classList.add("w-80", "lg:w-96", "p-6");
 
         try {
           const response = await fetch("http://127.0.0.1:5000/summarize", {
@@ -118,7 +174,6 @@
           actionItemsList.innerHTML = "";
           (data.action_items || []).forEach((item) => {
             const li = document.createElement("li");
-            // Render markdown with marked
             li.innerHTML = marked.parseInline(item);
             actionItemsList.appendChild(li);
           });
