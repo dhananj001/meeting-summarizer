@@ -28,37 +28,41 @@ def summarize():
         if not transcript:
             return jsonify({"error": "Transcript is required."}), 400
 
+        # ✅ Truncate transcript to 1000 words to reduce token cost
+        words = transcript.split()
+        if len(words) > 1000:
+            transcript = " ".join(words[:1000])
+
+        # ✅ More concise prompt (reduced input token usage)
         prompt = (
-                    "You are an expert AI meeting assistant. Given the following transcript of a business meeting, "
-                    "your task is to:\n\n"
-                    "1. Write a concise summary (3–5 sentences) of key discussion points, avoiding filler talk.\n"
-                    "2. Identify and clearly list any **action items** discussed.\n"
-                    "   - For each action item, include:\n"
-                    "     • Task description\n"
-                    "     • Responsible person (if mentioned)\n"
-                    "     • Deadline (if mentioned)\n"
-                    "3. If possible, format the response in markdown.\n\n"
-                    "Meeting Transcript:\n"
-                    f"{transcript}\n\n"
-                    "---\n\n"
-                    "Respond in the following format:\n\n"
-                    "### Summary:\n"
-                    "<summary here>\n\n"
-                    "### Action Items:\n"
-                    "- **Task**: ...  \n"
-                    "  **Point of Contact (POC)**: ...  \n"
-                    "  **Deadline**: ...\n"
-                )
+            "You are an AI meeting assistant. Summarize the following business meeting in 3–5 sentences. "
+            "Then extract action items as markdown collapsible cards using <details>. "
+            "Each card should contain:\n"
+            "- Task\n- Point of Contact (POC)\n- Deadline\n\n"
+            f"Meeting Transcript:\n{transcript}"
+        )
 
+        # Optional: Log token estimate before sending
+        tokens = model.count_tokens(prompt).total_tokens
+        print("Estimated token usage (input):", tokens)
 
+        # 🔁 Call Gemini
         response = model.generate_content(prompt)
-
         content = response.text.strip()
 
-        # Try to split into summary and action items
+        # ✅ Split into summary and action items
         parts = content.split("Action Items:")
         summary = parts[0].replace("Summary:", "").strip()
-        action_items = [item.strip("-• ").strip() for item in parts[1].split("\n") if item.strip()] if len(parts) > 1 else []
+        action_items_raw = parts[1] if len(parts) > 1 else ""
+
+        # ✅ Extract each <details> block separately (preserving markdown)
+        action_items = []
+        blocks = action_items_raw.split("<details>")
+        for block in blocks:
+            block = block.strip()
+            if block:
+                item = "<details>" + block if not block.startswith("<details>") else block
+                action_items.append(item)
 
         return jsonify({
             "summary": summary,
