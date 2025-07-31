@@ -10,7 +10,7 @@
     /* Retain markdown styling for action items */
     #actionItems strong {
       font-weight: 700;
-      color: #1f2937;
+      color: #8ebdff;
     }
     #actionItems em {
       font-style: italic;
@@ -26,6 +26,56 @@
       z-index: -1;
       background: linear-gradient(to bottom, #030014, #0a0a2a);
     }
+    /* Glassmorphism styles */
+    .glassmorphism {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(-100px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    }
+    /* Enhance input textarea with glassmorphism */
+    #transcript {
+      background: rgba(255, 255, 255, 0.05) !important;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+    /* Enhance button with glassmorphism hover */
+    #summarizeBtn:hover {
+      background: rgba(59, 130, 246, 0.8) !important;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    /* Smooth transitions for result panel */
+    #result {
+      transition: width 0.3s ease, padding 0.3s ease;
+    }
+    /* Custom scrollbar styling for WebKit browsers */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border-radius: 10px;
+      margin: 4px 0;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(142, 189, 255, 0.3), rgba(59, 130, 246, 0.3));
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(142, 189, 255, 0.5), rgba(59, 130, 246, 0.5));
+    }
+    /* Firefox scrollbar styling (limited support) */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(142, 189, 255, 0.3) rgba(255, 255, 255, 0.03);
+    }
   </style>
 </head>
 <body class="h-full flex items-center justify-center p-4 sm:p-6 overflow-hidden">
@@ -33,30 +83,30 @@
   <canvas id="starfield"></canvas>
 
   <!-- Main Container -->
-  <div class="w-full max-w-7xl h-[90vh] flex bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-800/50 overflow-hidden">
+  <div class="w-full max-w-5xl h-[80vh] flex glassmorphism rounded-2xl overflow-hidden">
     <!-- Left Section: Transcript Input -->
     <div id="input-section" class="flex-1 p-6 sm:p-8 space-y-6 overflow-y-auto">
       <div class="space-y-2">
         <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">AI Meeting Summarizer</h1>
-        <p class="text-sm text-gray-400">Generate concise summaries and actionable insights from your meeting transcripts with advanced AI.</p>
+        <p class="text-sm text-gray-300">Generate concise summaries and actionable insights from your meeting transcripts with advanced AI.</p>
       </div>
       <div class="space-y-3">
-        <label for="transcript" class="block text-sm font-medium text-gray-300">Meeting Transcript</label>
+        <label for="transcript" class="block text-sm font-medium text-gray-200">Meeting Transcript</label>
         <textarea
           id="transcript"
           rows="10"
-          class="w-full bg-gray-800/70 text-gray-200 border border-gray-700 rounded-lg p-4 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder-gray-500"
+          class="w-full text-gray-200 border rounded-lg p-4 focus:ring-1 focus:ring-blue-400 focus:border-blue-400 transition-all duration-150 placeholder-gray-500"
           placeholder="Paste your meeting transcript here..."
         ></textarea>
       </div>
       <div class="flex items-center gap-4">
         <button
           id="summarizeBtn"
-          class="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all duration-150"
+          class="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium transition-all duration-150"
         >
           Summarize
         </button>
-        <div id="loading" class="text-sm text-gray-400 hidden flex items-center gap-2">
+        <div id="loading" class="text-sm text-gray-300 hidden flex items-center gap-2">
           <svg class="animate-spin h-4 w-4 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
@@ -69,15 +119,15 @@
     <!-- Right Section: Summary Panel (Hidden by Default) -->
     <div
       id="result"
-      class="w-0 lg:w-96 bg-gray-900/90 backdrop-blur-sm border-l border-gray-800/50 p-0 lg:p-6 space-y-6 overflow-y-auto transition-all duration-300 hidden"
+      class="w-0 lg:w-96 glassmorphism border-l border-gray-700/30 p-0 lg:p-6 space-y-6 overflow-y-auto hidden"
     >
       <div class="space-y-3">
         <h2 class="text-lg font-medium text-white flex items-center gap-2">Summary</h2>
-        <div id="summaryText" class="bg-gray-800/50 p-4 rounded-lg text-gray-300 text-sm"></div>
+        <div id="summaryText" class="bg-gray-800/20 p-4 rounded-lg text-gray-200 text-sm"></div>
       </div>
       <div class="space-y-3">
         <h2 class="text-lg font-medium text-white flex items-center gap-2">Action Items</h2>
-        <ul id="actionItems" class="list-disc pl-5 space-y-2 text-gray-300 text-sm"></ul>
+        <ul id="actionItems" class="list-disc pl-5 space-y-2 text-gray-200 text-sm"></ul>
       </div>
     </div>
   </div>
@@ -98,7 +148,7 @@
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
         this.size = Math.random() * 1.5;
-        this.speed = Math.random() * 0.05;
+        this.speed = Math.random() * 0.35; // Increased speed for quicker animation
         this.opacity = Math.random() * 0.5 + 0.3;
       }
       update() {
