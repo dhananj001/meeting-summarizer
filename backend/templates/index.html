@@ -1,22 +1,54 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-100">
+<html lang="en" class="h-full bg-gray-50">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Meeting Summarizer</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    }
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .hover-scale {
+      transition: transform 0.2s ease-in-out;
+    }
+    .hover-scale:hover {
+      transform: scale(1.02);
+    }
+    /* Style markdown-rendered text */
+    #actionItems strong {
+      font-weight: 700;
+      color: #1f2937;
+    }
+    #actionItems em {
+      font-style: italic;
+      color: #374151;
+    }
+  </style>
 </head>
-<body class="h-full flex items-center justify-center p-4">
-  <div class="w-full max-w-3xl bg-white shadow-md rounded-lg p-6 space-y-6">
-    <h1 class="text-2xl font-bold text-center">📝 Meeting Summarizer</h1>
+<body class="h-full flex items-center justify-center p-6 bg-gradient-to-br from-blue-100 via-purple-100 to-gray-100">
+  <div class="w-full max-w-4xl glass-effect shadow-2xl rounded-2xl p-8 space-y-8 hover-scale">
+    <div class="text-center">
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">📝 Meeting Summarizer</h1>
+      <p class="mt-2 text-sm text-gray-600">Transform your meeting transcripts into concise summaries and actionable insights.</p>
+    </div>
 
     <!-- Transcript Input -->
     <div>
-      <label for="transcript" class="block font-medium mb-1">Paste Meeting Transcript:</label>
+      <label for="transcript" class="block text-sm font-semibold text-gray-700 mb-2">Paste Meeting Transcript</label>
       <textarea
         id="transcript"
-        rows="10"
-        class="w-full border border-gray-300 rounded p-2"
+        rows="8"
+        class="w-full border border-gray-200 rounded-lg p-4 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
         placeholder="Paste your meeting transcript here..."
       ></textarea>
     </div>
@@ -25,65 +57,80 @@
     <div class="flex justify-between items-center">
       <button
         id="summarizeBtn"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        class="gradient-bg text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200"
       >
-        Summarize
+        Summarize Now
       </button>
-      <div id="loading" class="text-sm text-gray-500 hidden">⏳ Summarizing...</div>
+      <div id="loading" class="text-sm text-gray-500 hidden flex items-center gap-2">
+        <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+        </svg>
+        Summarizing...
+      </div>
     </div>
 
     <!-- Result Display -->
-    <div id="result" class="hidden space-y-4">
+    <div id="result" class="hidden space-y-6">
       <div>
-        <h2 class="text-lg font-semibold">📌 Summary:</h2>
-        <p id="summaryText" class="bg-gray-100 p-3 rounded"></p>
+        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">📌 Summary</h2>
+        <p id="summaryText" class="bg-white p-4 rounded-lg border border-gray-100 shadow-sm text-gray-700"></p>
       </div>
       <div>
-        <h2 class="text-lg font-semibold">✅ Action Items:</h2>
-        <ul id="actionItems" class="list-disc pl-6 space-y-1"></ul>
+        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">✅ Action Items</h2>
+        <ul id="actionItems" class="list-disc pl-6 space-y-2 text-gray-700"></ul>
       </div>
     </div>
   </div>
 
   <script>
-    const summarizeBtn = document.getElementById("summarizeBtn");
-    const loading = document.getElementById("loading");
-    const resultDiv = document.getElementById("result");
-    const summaryText = document.getElementById("summaryText");
-    const actionItemsList = document.getElementById("actionItems");
+    document.addEventListener("DOMContentLoaded", () => {
+      const summarizeBtn = document.getElementById("summarizeBtn");
+      const loading = document.getElementById("loading");
+      const resultDiv = document.getElementById("result");
+      const summaryText = document.getElementById("summaryText");
+      const actionItemsList = document.getElementById("actionItems");
 
-    summarizeBtn.addEventListener("click", async () => {
-      const transcript = document.getElementById("transcript").value.trim();
-      if (!transcript) return alert("Please paste a transcript.");
-
-      loading.classList.remove("hidden");
-      resultDiv.classList.add("hidden");
-
-      try {
-        const response = await fetch("http://127.0.0.1:5000/summarize", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ transcript }),
-        });
-
-        if (!response.ok) throw new Error("Server error");
-
-        const data = await response.json();
-        summaryText.textContent = data.summary || "No summary returned.";
-        actionItemsList.innerHTML = "";
-        (data.action_items || []).forEach((item) => {
-          const li = document.createElement("li");
-          li.textContent = item;
-          actionItemsList.appendChild(li);
-        });
-
-        resultDiv.classList.remove("hidden");
-      } catch (err) {
-        alert("⚠️ Something went wrong: " + err.message);
-        console.error(err);
-      } finally {
-        loading.classList.add("hidden");
+      if (!summarizeBtn || !loading || !resultDiv || !summaryText || !actionItemsList) {
+        console.error("One or more DOM elements not found.");
+        alert("⚠️ Application error: Required elements not found.");
+        return;
       }
+
+      summarizeBtn.addEventListener("click", async () => {
+        const transcript = document.getElementById("transcript").value.trim();
+        if (!transcript) return alert("Please paste a transcript.");
+
+        loading.classList.remove("hidden");
+        resultDiv.classList.add("hidden");
+
+        try {
+          const response = await fetch("http://127.0.0.1:5000/summarize", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ transcript }),
+          });
+
+          if (!response.ok) throw new Error("Server error");
+
+          const data = await response.json();
+          summaryText.textContent = data.summary || "No summary returned.";
+          actionItemsList.innerHTML = "";
+          (data.action_items || []).forEach((item) => {
+            const li = document.createElement("li");
+            // Render markdown with marked
+            li.innerHTML = marked.parseInline(item);
+            actionItemsList.appendChild(li);
+          });
+
+          resultDiv.classList.remove("hidden");
+        } catch (err) {
+          alert("⚠️ Something went wrong: " + err.message);
+          console.error(err);
+        } finally {
+          loading.classList.add("hidden");
+        }
+      });
     });
   </script>
 </body>
