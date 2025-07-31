@@ -46,7 +46,7 @@ def summarize():
                     "<summary here>\n\n"
                     "### Action Items:\n"
                     "- **Task**: ...  \n"
-                    "  **Owner**: ...  \n"
+                    "  **Point of Contact (POC)**: ...  \n"
                     "  **Deadline**: ...\n"
                 )
 
