@@ -15,7 +15,7 @@ AI-powered web application that **summarizes business meeting transcripts** into
 
 ---
 
-## 🧠 Why This Project?
+## Why This Project?
 
 Built as a practical demonstration for roles like **AI Platform Engineer**, this project showcases:
 
@@ -49,7 +49,7 @@ Built as a practical demonstration for roles like **AI Platform Engineer**, this
 
 ---
 
-## 📀 Architecture Overview
+## Architecture Overview
 
 ```
 [User Transcript]
@@ -67,7 +67,7 @@ Built as a practical demonstration for roles like **AI Platform Engineer**, this
 
 ---
 
-## 🧹 Prompt Logic
+## Prompt Logic
 
 The app sends structured instructions to the LLM to:
 
@@ -87,7 +87,7 @@ You are an expert AI meeting assistant. Given the following transcript...
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone the repo
 
@@ -122,7 +122,7 @@ http://localhost:5000/
 
 ---
 
-## 🧪 Sample Output
+## Sample Output
 
 ### Summary:
 
@@ -151,7 +151,7 @@ http://localhost:5000/
 
 ---
 
-## 🧰 Optional Alternative: Hugging Face API
+## Optional Alternative: Hugging Face API
 
 You can experiment with the same prompt on Hugging Face's hosted LLMs like Mistral, Phi-3, or LLaMA models. This may be useful if:
 
